@@ -17,6 +17,8 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <local:BindingProxy x:Key="Proxy" Data="{Binding}"/>
+        <local:BoolToStretchDirectionConverter x:Key="BoolToStretchDir"/>
+        <local:BoolToStretchConverter x:Key="BoolToStretch"/>
     </Window.Resources>
 
     <Grid>
@@ -40,6 +42,34 @@
                         Cursor="Hand"/>
 
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <CheckBox Content="Fit Small"
+                              IsChecked="{Binding FitSmallImages}"
+                              Foreground="#CCC"
+                              VerticalAlignment="Center"
+                              Margin="0,0,12,0"
+                              FontSize="11"
+                              ToolTip="When unchecked, small images keep their original pixel size"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding FitSmallImages}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Scale:" Foreground="#CCC" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
+                        <Slider Width="100"
+                                Minimum="1" Maximum="16"
+                                Value="{Binding PixelScale}"
+                                VerticalAlignment="Center"
+                                SmallChange="1" LargeChange="4"
+                                IsSnapToTickEnabled="True" TickFrequency="1"/>
+                        <TextBlock Text="{Binding PixelScale, StringFormat={}{0}x}"
+                                   Foreground="#CCC" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="12" Width="28"/>
+                    </StackPanel>
                     <TextBlock Text="Size:" Foreground="#CCC" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
                     <Slider Width="200"
                             Minimum="32" Maximum="512"
@@ -117,22 +147,37 @@
                     <StackPanel Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType=Window}}">
                         <StackPanel.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="Properties"
-                                          Command="{Binding Data.ShowInfoCommand, Source={StaticResource Proxy}}"
-                                          CommandParameter="{Binding}"/>
+                                <MenuItem Header="{Binding FileName}" IsEnabled="False" FontWeight="Bold"/>
+                                <MenuItem IsEnabled="False">
+                                    <MenuItem.Header>
+                                        <TextBlock>
+                                            <Run Text="{Binding PixelWidth, Mode=OneWay}"/><Run Text=" x "/><Run Text="{Binding PixelHeight, Mode=OneWay}"/><Run Text="  |  "/><Run Text="{Binding FileSizeText, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <Separator/>
                                 <MenuItem Header="Show in Explorer"
                                           Command="{Binding Data.OpenInExplorerCommand, Source={StaticResource Proxy}}"
                                           CommandParameter="{Binding}"/>
                             </ContextMenu>
                         </StackPanel.ContextMenu>
                         <Border Background="#1A1A1A"
+                                Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType=Window}}"
-                                HorizontalAlignment="Center">
+                                ClipToBounds="True">
                             <Image Source="{Binding Thumbnail}"
                                    RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                   Stretch="Uniform"
+                                   Stretch="{Binding DataContext.FitSmallImages, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToStretch}}"
+                                   StretchDirection="{Binding DataContext.FitSmallImages, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToStretchDir}}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
                                    SnapsToDevicePixels="True"
-                                   UseLayoutRounding="True"/>
+                                   UseLayoutRounding="True">
+                                <Image.LayoutTransform>
+                                    <ScaleTransform ScaleX="{Binding DataContext.ImageScale, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    ScaleY="{Binding DataContext.ImageScale, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                </Image.LayoutTransform>
+                            </Image>
                         </Border>
                         <TextBlock Text="{Binding FileName}"
                                    Foreground="#BBB"

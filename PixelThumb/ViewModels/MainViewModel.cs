@@ -17,6 +17,8 @@ public class MainViewModel : INotifyPropertyChanged
     };
 
     private double _thumbnailSize = 96;
+    private bool _fitSmallImages = true;
+    private int _pixelScale = 4;
     private string _currentFolder = string.Empty;
     private string _statusText = "Select a folder";
     private bool _isLoading;
@@ -34,6 +36,31 @@ public class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+    public bool FitSmallImages
+    {
+        get => _fitSmallImages;
+        set
+        {
+            _fitSmallImages = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ImageScale));
+        }
+    }
+
+    public int PixelScale
+    {
+        get => _pixelScale;
+        set
+        {
+            if (_pixelScale == value) return;
+            _pixelScale = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ImageScale));
+        }
+    }
+
+    public double ImageScale => FitSmallImages ? 1.0 : _pixelScale;
 
     public string CurrentFolder
     {
