@@ -17,19 +17,19 @@ struct ToolbarView: View {
             Toggle("Fit Small", isOn: $viewModel.fitSmallImages)
                 .toggleStyle(.checkbox)
 
-            if !viewModel.fitSmallImages {
-                HStack(spacing: 8) {
-                    Text("Scale:")
-                        .foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                Text("Scale:")
+                    .foregroundStyle(.secondary)
 
-                    Slider(value: $viewModel.pixelScale, in: 1...16, step: 1)
-                        .frame(width: 100)
+                Slider(value: $viewModel.pixelScale, in: 1...16, step: 1)
+                    .frame(width: 100)
 
-                    Text("\(Int(viewModel.pixelScale))x")
-                        .monospacedDigit()
-                        .frame(width: 30, alignment: .trailing)
-                }
+                Text("\(Int(viewModel.pixelScale))x")
+                    .monospacedDigit()
+                    .frame(width: 30, alignment: .trailing)
             }
+            .disabled(viewModel.fitSmallImages)
+            .opacity(viewModel.fitSmallImages ? 0.5 : 1.0)
 
             Divider()
                 .frame(height: 20)
