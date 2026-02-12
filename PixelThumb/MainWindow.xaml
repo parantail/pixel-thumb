@@ -17,8 +17,7 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <local:BindingProxy x:Key="Proxy" Data="{Binding}"/>
-        <local:BoolToStretchDirectionConverter x:Key="BoolToStretchDir"/>
-        <local:BoolToStretchConverter x:Key="BoolToStretch"/>
+        <local:ImageScaleMultiConverter x:Key="ImageScaleConverter"/>
     </Window.Resources>
 
     <Grid>
@@ -48,7 +47,14 @@
                               VerticalAlignment="Center"
                               Margin="0,0,12,0"
                               FontSize="11"
-                              ToolTip="When unchecked, small images keep their original pixel size"/>
+                              ToolTip="When checked, small images are scaled up to fill the thumbnail"/>
+                    <CheckBox Content="Fit Large"
+                              IsChecked="{Binding FitLargeImages}"
+                              Foreground="#CCC"
+                              VerticalAlignment="Center"
+                              Margin="0,0,12,0"
+                              FontSize="11"
+                              ToolTip="When checked, large images are scaled down to fit the thumbnail"/>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
@@ -92,7 +98,8 @@
         </Border>
 
         <!-- Image Grid -->
-        <ListBox Grid.Row="1"
+        <ListBox x:Name="ImageListBox"
+                 Grid.Row="1"
                  ItemsSource="{Binding Images}"
                  Background="Transparent"
                  BorderThickness="0"
@@ -167,15 +174,34 @@
                                 ClipToBounds="True">
                             <Image Source="{Binding Thumbnail}"
                                    RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                   Stretch="{Binding DataContext.FitSmallImages, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToStretch}}"
-                                   StretchDirection="{Binding DataContext.FitSmallImages, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToStretchDir}}"
+                                   Stretch="None"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    SnapsToDevicePixels="True"
                                    UseLayoutRounding="True">
                                 <Image.LayoutTransform>
-                                    <ScaleTransform ScaleX="{Binding DataContext.ImageScale, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    ScaleY="{Binding DataContext.ImageScale, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                    <ScaleTransform>
+                                        <ScaleTransform.ScaleX>
+                                            <MultiBinding Converter="{StaticResource ImageScaleConverter}">
+                                                <Binding Path="PixelWidth"/>
+                                                <Binding Path="PixelHeight"/>
+                                                <Binding Path="DataContext.FitSmallImages" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="DataContext.FitLargeImages" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="DataContext.PixelScale" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="DataContext.ThumbnailSize" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                            </MultiBinding>
+                                        </ScaleTransform.ScaleX>
+                                        <ScaleTransform.ScaleY>
+                                            <MultiBinding Converter="{StaticResource ImageScaleConverter}">
+                                                <Binding Path="PixelWidth"/>
+                                                <Binding Path="PixelHeight"/>
+                                                <Binding Path="DataContext.FitSmallImages" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="DataContext.FitLargeImages" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="DataContext.PixelScale" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="DataContext.ThumbnailSize" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                            </MultiBinding>
+                                        </ScaleTransform.ScaleY>
+                                    </ScaleTransform>
                                 </Image.LayoutTransform>
                             </Image>
                         </Border>

@@ -7,6 +7,7 @@ struct PixelPerfectImage: NSViewRepresentable {
     let imageHeight: Int
     let containerSize: CGFloat
     let fitSmall: Bool
+    let fitLarge: Bool
     let pixelScale: CGFloat
 
     func makeNSView(context: Context) -> PixelPerfectImageView {
@@ -22,6 +23,7 @@ struct PixelPerfectImage: NSViewRepresentable {
             imageHeight: imageHeight,
             containerSize: containerSize,
             fitSmall: fitSmall,
+            fitLarge: fitLarge,
             pixelScale: pixelScale
         )
     }
@@ -35,6 +37,7 @@ class PixelPerfectImageView: NSView {
         imageHeight: Int,
         containerSize: CGFloat,
         fitSmall: Bool,
+        fitLarge: Bool,
         pixelScale: CGFloat
     )?
 
@@ -44,9 +47,10 @@ class PixelPerfectImageView: NSView {
         imageHeight: Int,
         containerSize: CGFloat,
         fitSmall: Bool,
+        fitLarge: Bool,
         pixelScale: CGFloat
     ) {
-        currentConfig = (image, imageWidth, imageHeight, containerSize, fitSmall, pixelScale)
+        currentConfig = (image, imageWidth, imageHeight, containerSize, fitSmall, fitLarge, pixelScale)
 
         guard let image = image else {
             imageLayer?.removeFromSuperlayer()
@@ -88,6 +92,7 @@ class PixelPerfectImageView: NSView {
         let imgH = CGFloat(config.imageHeight > 0 ? config.imageHeight : Int(image.size.height))
         let containerSize = config.containerSize
         let fitSmall = config.fitSmall
+        let fitLarge = config.fitLarge
         let pixelScale = config.pixelScale
 
         guard imgW > 0 && imgH > 0 else { return }
@@ -95,21 +100,20 @@ class PixelPerfectImageView: NSView {
         let displaySize: CGSize
 
         if fitSmall {
-            // Fit Small: scale to fill container
-            let scale = min(containerSize / imgW, containerSize / imgH)
+            var scale = min(containerSize / imgW, containerSize / imgH)
+            if !fitLarge {
+                scale = max(scale, 1.0)
+            }
             displaySize = CGSize(width: imgW * scale, height: imgH * scale)
         } else {
-            // Scale mode: apply pixel scale
             let scaledW = imgW * pixelScale
             let scaledH = imgH * pixelScale
 
-            if scaledW <= containerSize && scaledH <= containerSize {
-                // Scaled image fits in container
-                displaySize = CGSize(width: scaledW, height: scaledH)
-            } else {
-                // Scaled image too large, fit to container
+            if fitLarge && (scaledW > containerSize || scaledH > containerSize) {
                 let fitScale = min(containerSize / scaledW, containerSize / scaledH)
                 displaySize = CGSize(width: scaledW * fitScale, height: scaledH * fitScale)
+            } else {
+                displaySize = CGSize(width: scaledW, height: scaledH)
             }
         }
 

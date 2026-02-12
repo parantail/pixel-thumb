@@ -17,6 +17,9 @@ struct ToolbarView: View {
             Toggle("Fit Small", isOn: $viewModel.fitSmallImages)
                 .toggleStyle(.checkbox)
 
+            Toggle("Fit Large", isOn: $viewModel.fitLargeImages)
+                .toggleStyle(.checkbox)
+
             HStack(spacing: 8) {
                 Text("Scale:")
                     .foregroundStyle(.secondary)

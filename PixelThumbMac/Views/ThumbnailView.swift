@@ -4,6 +4,7 @@ struct ThumbnailView: View {
     let item: ImageItem
     let size: CGFloat
     let fitSmall: Bool
+    let fitLarge: Bool
     let pixelScale: CGFloat
     let onRevealInFinder: () -> Void
     let onOpenWithDefaultApp: () -> Void
@@ -20,9 +21,10 @@ struct ThumbnailView: View {
                         imageHeight: item.height,
                         containerSize: size - 8,
                         fitSmall: fitSmall,
+                        fitLarge: fitLarge,
                         pixelScale: pixelScale
                     )
-                    .id("\(item.id)-\(fitSmall)-\(pixelScale)-\(size)")
+                    .id("\(item.id)-\(fitSmall)-\(fitLarge)-\(pixelScale)-\(size)")
                 } else {
                     ProgressView()
                         .scaleEffect(0.5)

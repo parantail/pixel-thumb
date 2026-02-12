@@ -15,6 +15,7 @@ struct ImageGridView: View {
                         item: item,
                         size: viewModel.thumbnailSize,
                         fitSmall: viewModel.fitSmallImages,
+                        fitLarge: viewModel.fitLargeImages,
                         pixelScale: viewModel.pixelScale,
                         onRevealInFinder: { viewModel.revealInFinder(item) },
                         onOpenWithDefaultApp: { viewModel.openWithDefaultApp(item) }

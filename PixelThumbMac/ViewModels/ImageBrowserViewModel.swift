@@ -7,6 +7,7 @@ final class ImageBrowserViewModel {
     private(set) var images: [ImageItem] = []
     var thumbnailSize: CGFloat = 128
     var fitSmallImages: Bool = true
+    var fitLargeImages: Bool = true
     var pixelScale: CGFloat = 4
 
     private(set) var isLoading: Bool = false
