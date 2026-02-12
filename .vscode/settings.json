@@ -1,0 +1,4 @@
+{
+    "window.title": "${dirty}[${rootName}]${separator}${activeEditorShort}${separator}${profileName}${separator}${appName}",
+    "editor.formatOnSave": true
+}
