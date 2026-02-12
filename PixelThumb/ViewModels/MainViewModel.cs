@@ -102,17 +102,19 @@ public class MainViewModel : INotifyPropertyChanged
     {
         var dialog = new Microsoft.Win32.OpenFolderDialog
         {
-            Title = "Select Image Folder"
+            Title = "Select Image Folder(s)",
+            Multiselect = true
         };
 
         if (dialog.ShowDialog() == true)
         {
-            CurrentFolder = dialog.FolderName;
-            _ = LoadImagesAsync(dialog.FolderName);
+            var folders = dialog.FolderNames;
+            CurrentFolder = string.Join("; ", folders.Select(Path.GetFileName));
+            _ = LoadImagesAsync(folders);
         }
     }
 
-    private async Task LoadImagesAsync(string folderPath)
+    private async Task LoadImagesAsync(string[] folderPaths)
     {
         _loadCts?.Cancel();
         _loadCts = new CancellationTokenSource();
@@ -124,7 +126,8 @@ public class MainViewModel : INotifyPropertyChanged
 
         var files = await Task.Run(() =>
         {
-            return Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories)
+            return folderPaths
+                .SelectMany(folder => Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories))
                 .Where(f => ImageExtensions.Contains(Path.GetExtension(f)))
                 .ToList();
         }, token);
@@ -163,7 +166,10 @@ public class MainViewModel : INotifyPropertyChanged
 
         if (!token.IsCancellationRequested)
         {
-            StatusText = $"{Images.Count} images ({folderPath})";
+            var folderDisplay = folderPaths.Length == 1
+                ? folderPaths[0]
+                : $"{folderPaths.Length} folders";
+            StatusText = $"{Images.Count} images ({folderDisplay})";
             IsLoading = false;
         }
     }

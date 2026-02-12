@@ -24,28 +24,34 @@ final class ImageBrowserViewModel {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
-        panel.allowsMultipleSelection = false
-        panel.message = "Select a folder containing images"
+        panel.allowsMultipleSelection = true
+        panel.message = "Select folder(s) containing images"
         panel.prompt = "Open"
 
-        if panel.runModal() == .OK, let url = panel.url {
-            loadImages(from: url)
+        if panel.runModal() == .OK, !panel.urls.isEmpty {
+            loadImages(from: panel.urls)
         }
     }
 
-    func loadImages(from folderURL: URL) {
+    func loadImages(from folderURLs: [URL]) {
         loadingTask?.cancel()
         images.removeAll()
-        currentFolderPath = folderURL.path
+        currentFolderPath = folderURLs.count == 1
+            ? folderURLs[0].path
+            : folderURLs.map { $0.lastPathComponent }.joined(separator: "; ")
         isLoading = true
         statusMessage = "Scanning folder..."
 
         loadingTask = Task {
-            let imageURLs = await scanForImages(in: folderURL)
+            var allImageURLs: [URL] = []
+            for folderURL in folderURLs {
+                let urls = await scanForImages(in: folderURL)
+                allImageURLs.append(contentsOf: urls)
+            }
 
             if Task.isCancelled { return }
 
-            let items = imageURLs.map { ImageItem(url: $0) }
+            let items = allImageURLs.map { ImageItem(url: $0) }
             self.images = items
             self.statusMessage = "\(items.count) images found"
             self.isLoading = false
