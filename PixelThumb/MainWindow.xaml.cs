@@ -1,7 +1,9 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using PixelThumb.Models;
 using PixelThumb.ViewModels;
 
 namespace PixelThumb;
@@ -30,6 +32,14 @@ public partial class MainWindow : Window
     {
         var scrollViewer = FindVisualChild<ScrollViewer>(depObj);
         scrollViewer?.ScrollToTop();
+    }
+
+    private void ImageListBox_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (ImageListBox.SelectedItem is ImageItem item)
+        {
+            Process.Start(new ProcessStartInfo(item.FilePath) { UseShellExecute = true });
+        }
     }
 
     private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject

@@ -101,6 +101,7 @@
         <ListBox x:Name="ImageListBox"
                  Grid.Row="1"
                  ItemsSource="{Binding Images}"
+                 MouseDoubleClick="ImageListBox_MouseDoubleClick"
                  Background="Transparent"
                  BorderThickness="0"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
