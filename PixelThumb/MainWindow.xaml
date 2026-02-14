@@ -217,7 +217,7 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <!-- Loading Indicator -->
+        <!-- Loading Indicator (top thin bar) -->
         <ProgressBar Grid.Row="1"
                      IsIndeterminate="True"
                      Height="3"
@@ -226,6 +226,22 @@
                      Background="Transparent"
                      Foreground="#0078D4"
                      BorderThickness="0"/>
+
+        <!-- Loading Overlay (center) -->
+        <Border Grid.Row="1"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Background="#CC2A2A2A"
+                CornerRadius="8"
+                Padding="24,20"
+                Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+                <ProgressBar IsIndeterminate="True" Width="200" Height="3"
+                             Background="Transparent" Foreground="#0078D4" BorderThickness="0"/>
+                <TextBlock Text="{Binding StatusText}" Foreground="#999" FontSize="13"
+                           HorizontalAlignment="Center" Margin="0,10,0,0"/>
+            </StackPanel>
+        </Border>
 
         <!-- Status Bar -->
         <Border Grid.Row="2" Background="#2D2D2D" Padding="8,4">
