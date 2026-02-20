@@ -10,9 +10,52 @@ final class ImageBrowserViewModel {
     var fitLargeImages: Bool = true
     var pixelScale: CGFloat = 4
 
+    var filterMinWidth: Int? { didSet { scheduleFilterUpdate() } }
+    var filterMaxWidth: Int? { didSet { scheduleFilterUpdate() } }
+    var filterMinHeight: Int? { didSet { scheduleFilterUpdate() } }
+    var filterMaxHeight: Int? { didSet { scheduleFilterUpdate() } }
+
+    private(set) var filteredImages: [ImageItem] = []
     private(set) var isLoading: Bool = false
     private(set) var statusMessage: String = "No folder selected"
     private(set) var currentFolderPath: String?
+    private var filterDebounceTask: Task<Void, Never>?
+
+    var isFilterActive: Bool {
+        filterMinWidth != nil || filterMaxWidth != nil ||
+        filterMinHeight != nil || filterMaxHeight != nil
+    }
+
+    private func applyFilter() -> [ImageItem] {
+        guard isFilterActive else { return images }
+        return images.filter { item in
+            if !item.isLoaded { return true }
+            if let minW = filterMinWidth, item.width < minW { return false }
+            if let maxW = filterMaxWidth, item.width > maxW { return false }
+            if let minH = filterMinHeight, item.height < minH { return false }
+            if let maxH = filterMaxHeight, item.height > maxH { return false }
+            return true
+        }
+    }
+
+    private func scheduleFilterUpdate() {
+        filterDebounceTask?.cancel()
+        filterDebounceTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled, let self else { return }
+            self.filteredImages = self.applyFilter()
+            if self.isFilterActive {
+                self.statusMessage = "\(self.filteredImages.count) / \(self.images.count) images"
+            }
+        }
+    }
+
+    func clearFilters() {
+        filterMinWidth = nil
+        filterMaxWidth = nil
+        filterMinHeight = nil
+        filterMaxHeight = nil
+    }
 
     private var loadingTask: Task<Void, Never>?
 
@@ -36,6 +79,7 @@ final class ImageBrowserViewModel {
     func loadImages(from folderURLs: [URL]) {
         loadingTask?.cancel()
         images.removeAll()
+        filteredImages.removeAll()
         currentFolderPath = folderURLs.count == 1
             ? folderURLs[0].path
             : folderURLs.map { $0.lastPathComponent }.joined(separator: "; ")
@@ -53,6 +97,7 @@ final class ImageBrowserViewModel {
 
             let items = allImageURLs.map { ImageItem(url: $0) }
             self.images = items
+            self.filteredImages = self.applyFilter()
             self.statusMessage = "\(items.count) images found"
             self.isLoading = false
 
@@ -103,7 +148,12 @@ final class ImageBrowserViewModel {
         }
 
         if !Task.isCancelled {
-            self.statusMessage = "\(items.count) images"
+            self.filteredImages = applyFilter()
+            if isFilterActive {
+                self.statusMessage = "\(filteredImages.count) / \(items.count) images"
+            } else {
+                self.statusMessage = "\(items.count) images"
+            }
         }
     }
 

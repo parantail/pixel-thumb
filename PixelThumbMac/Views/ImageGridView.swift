@@ -10,7 +10,7 @@ struct ImageGridView: View {
     var body: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 8) {
-                ForEach(viewModel.images) { item in
+                ForEach(viewModel.filteredImages) { item in
                     ThumbnailView(
                         item: item,
                         size: viewModel.thumbnailSize,

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using PixelThumb.Models;
 
@@ -24,6 +25,13 @@ public class MainViewModel : INotifyPropertyChanged
     private string _statusText = "Select a folder";
     private bool _isLoading;
     private CancellationTokenSource? _loadCts;
+
+    private int? _filterMinWidth;
+    private int? _filterMaxWidth;
+    private int? _filterMinHeight;
+    private int? _filterMaxHeight;
+    private bool _isFilterPopupOpen;
+    private CancellationTokenSource? _filterDebounceCts;
 
     public ObservableCollection<ImageItem> Images { get; } = new();
 
@@ -87,15 +95,106 @@ public class MainViewModel : INotifyPropertyChanged
         set { _isLoading = value; OnPropertyChanged(); }
     }
 
+    public int? FilterMinWidth
+    {
+        get => _filterMinWidth;
+        set { _filterMinWidth = value; OnPropertyChanged(); OnFilterChanged(); }
+    }
+
+    public int? FilterMaxWidth
+    {
+        get => _filterMaxWidth;
+        set { _filterMaxWidth = value; OnPropertyChanged(); OnFilterChanged(); }
+    }
+
+    public int? FilterMinHeight
+    {
+        get => _filterMinHeight;
+        set { _filterMinHeight = value; OnPropertyChanged(); OnFilterChanged(); }
+    }
+
+    public int? FilterMaxHeight
+    {
+        get => _filterMaxHeight;
+        set { _filterMaxHeight = value; OnPropertyChanged(); OnFilterChanged(); }
+    }
+
+    public bool IsFilterActive => FilterMinWidth.HasValue || FilterMaxWidth.HasValue ||
+                                   FilterMinHeight.HasValue || FilterMaxHeight.HasValue;
+
+    public bool IsFilterPopupOpen
+    {
+        get => _isFilterPopupOpen;
+        set { _isFilterPopupOpen = value; OnPropertyChanged(); }
+    }
+
     public ICommand SelectFolderCommand { get; }
     public ICommand ShowInfoCommand { get; }
     public ICommand OpenInExplorerCommand { get; }
+    public ICommand ClearFiltersCommand { get; }
 
     public MainViewModel()
     {
         SelectFolderCommand = new RelayCommand(SelectFolder);
         ShowInfoCommand = new RelayCommand<ImageItem>(ShowInfo);
         OpenInExplorerCommand = new RelayCommand<ImageItem>(OpenInExplorer);
+        ClearFiltersCommand = new RelayCommand(ClearFilters);
+
+        var view = CollectionViewSource.GetDefaultView(Images);
+        view.Filter = FilterPredicate;
+    }
+
+    private bool FilterPredicate(object obj)
+    {
+        if (!IsFilterActive) return true;
+        if (obj is not ImageItem item) return true;
+
+        // Show items that haven't loaded yet
+        if (item.PixelWidth == 0 && item.PixelHeight == 0 && !item.IsLoaded) return true;
+
+        if (FilterMinWidth.HasValue && item.PixelWidth < FilterMinWidth.Value) return false;
+        if (FilterMaxWidth.HasValue && item.PixelWidth > FilterMaxWidth.Value) return false;
+        if (FilterMinHeight.HasValue && item.PixelHeight < FilterMinHeight.Value) return false;
+        if (FilterMaxHeight.HasValue && item.PixelHeight > FilterMaxHeight.Value) return false;
+
+        return true;
+    }
+
+    private void OnFilterChanged()
+    {
+        OnPropertyChanged(nameof(IsFilterActive));
+        _filterDebounceCts?.Cancel();
+        _filterDebounceCts = new CancellationTokenSource();
+        var token = _filterDebounceCts.Token;
+        _ = DebounceFilterAsync(token);
+    }
+
+    private async Task DebounceFilterAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(300, token);
+            if (token.IsCancellationRequested) return;
+            CollectionViewSource.GetDefaultView(Images).Refresh();
+            UpdateFilteredStatusText();
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    private void ClearFilters()
+    {
+        FilterMinWidth = null;
+        FilterMaxWidth = null;
+        FilterMinHeight = null;
+        FilterMaxHeight = null;
+    }
+
+    private void UpdateFilteredStatusText()
+    {
+        if (!IsFilterActive || Images.Count == 0) return;
+        var view = CollectionViewSource.GetDefaultView(Images);
+        var filteredCount = view.Cast<object>().Count();
+        StatusText = $"{filteredCount} / {Images.Count} images";
     }
 
     private void SelectFolder()
@@ -171,6 +270,12 @@ public class MainViewModel : INotifyPropertyChanged
                 : $"{folderPaths.Length} folders";
             StatusText = $"{Images.Count} images ({folderDisplay})";
             IsLoading = false;
+
+            if (IsFilterActive)
+            {
+                CollectionViewSource.GetDefaultView(Images).Refresh();
+                UpdateFilteredStatusText();
+            }
         }
     }
 

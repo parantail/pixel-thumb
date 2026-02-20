@@ -13,6 +13,7 @@ Available for **Windows** (WPF) and **macOS** (SwiftUI).
 - **Virtualized Grid** — Smooth scrolling through thousands of images
 - **Async Loading** — Images load in background batches without freezing the UI
 - **Folder Recursion** — Scans all subfolders for supported image formats
+- **Dimension Filter** — Filter images by min/max width and height with debounced real-time updates
 - **Context Menu** — Right-click for image info (resolution, file size) or to reveal in Finder/Explorer
 - **Dark Theme** — Easy on the eyes for long browsing sessions
 
@@ -22,7 +23,7 @@ Available for **Windows** (WPF) and **macOS** (SwiftUI).
 ┌─────────────────────────────────────────────────────────────────┐
 │ File ▾                                                          │
 ├─────────────────────────────────────────────────────────────────┤
-│ ☑ Fit Small   Size: ────●──── 128px                             │
+│ [Filter]  ☑ Fit Small   Size: ────●──── 128px                    │
 ├─────────────────────────────────────────────────────────────────┤
 │ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐         │
 │ │      │ │      │ │      │ │      │ │      │ │      │         │
