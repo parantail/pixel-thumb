@@ -4,6 +4,8 @@ A lightweight native thumbnail viewer designed for pixel art. Browse thousands o
 
 Available for **Windows** (WPF) and **macOS** (SwiftUI).
 
+> **Cross-Platform Rule**: All UI/feature changes must be applied to both platforms. Never ship a change to one without the equivalent on the other.
+
 ## Features
 
 - **Pixel-Perfect Scaling** — NearestNeighbor interpolation keeps pixel art sharp at any zoom level
@@ -18,7 +20,9 @@ Available for **Windows** (WPF) and **macOS** (SwiftUI).
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ [Open Folder]  ☑ Fit Small   Size: ────●──── 128px             │
+│ File ▾                                                          │
+├─────────────────────────────────────────────────────────────────┤
+│ ☑ Fit Small   Size: ────●──── 128px                             │
 ├─────────────────────────────────────────────────────────────────┤
 │ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐         │
 │ │      │ │      │ │      │ │      │ │      │ │      │         │

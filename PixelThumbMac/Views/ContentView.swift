@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var viewModel = ImageBrowserViewModel()
+    @Bindable var viewModel: ImageBrowserViewModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -36,15 +36,9 @@ struct ContentView: View {
                 .font(.title2)
                 .foregroundStyle(.secondary)
 
-            Text("Click \"Open Folder\" to select a folder containing images")
+            Text("Use File → Open Folder (⌘O) to select a folder")
                 .font(.callout)
                 .foregroundStyle(.tertiary)
-
-            Button("Open Folder") {
-                viewModel.selectFolder()
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.appBackground)
@@ -52,6 +46,6 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(viewModel: ImageBrowserViewModel())
         .frame(width: 800, height: 600)
 }

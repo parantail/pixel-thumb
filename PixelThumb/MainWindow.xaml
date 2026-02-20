@@ -14,6 +14,10 @@
         <vm:MainViewModel/>
     </Window.DataContext>
 
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding SelectFolderCommand}"/>
+    </Window.InputBindings>
+
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <local:BindingProxy x:Key="Proxy" Data="{Binding}"/>
@@ -23,24 +27,26 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Toolbar -->
-        <Border Grid.Row="0" Background="#2D2D2D" Padding="8">
-            <DockPanel>
-                <Button DockPanel.Dock="Left"
-                        Content="Open Folder"
-                        Command="{Binding SelectFolderCommand}"
-                        Padding="12,6"
-                        FontSize="13"
-                        Background="#0078D4"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Cursor="Hand"/>
+        <!-- Menu Bar -->
+        <Menu Grid.Row="0" Background="#383838" Foreground="#DDD" Padding="2,2"
+              BorderBrush="#505050" BorderThickness="0,0,0,1">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open Folder..."
+                          Command="{Binding SelectFolderCommand}"
+                          InputGestureText="Ctrl+O"
+                          Foreground="Black"/>
+            </MenuItem>
+        </Menu>
 
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+        <!-- Toolbar -->
+        <Border Grid.Row="1" Background="#2D2D2D" Padding="8,4">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <CheckBox Content="Fit Small"
                               IsChecked="{Binding FitSmallImages}"
                               Foreground="#CCC"
@@ -99,7 +105,7 @@
 
         <!-- Image Grid -->
         <ListBox x:Name="ImageListBox"
-                 Grid.Row="1"
+                 Grid.Row="2"
                  ItemsSource="{Binding Images}"
                  MouseDoubleClick="ImageListBox_MouseDoubleClick"
                  Background="Transparent"
@@ -219,7 +225,7 @@
         </ListBox>
 
         <!-- Loading Indicator (top thin bar) -->
-        <ProgressBar Grid.Row="1"
+        <ProgressBar Grid.Row="2"
                      IsIndeterminate="True"
                      Height="3"
                      VerticalAlignment="Top"
@@ -229,7 +235,7 @@
                      BorderThickness="0"/>
 
         <!-- Loading Overlay (center) -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
                 Background="#CC2A2A2A"
@@ -245,7 +251,7 @@
         </Border>
 
         <!-- Status Bar -->
-        <Border Grid.Row="2" Background="#2D2D2D" Padding="8,4">
+        <Border Grid.Row="3" Background="#2D2D2D" Padding="8,4">
             <TextBlock Text="{Binding StatusText}" Foreground="#AAA" FontSize="11"/>
         </Border>
     </Grid>

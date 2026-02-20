@@ -5,15 +5,6 @@ struct ToolbarView: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            Button(action: { viewModel.selectFolder() }) {
-                Label("Open Folder", systemImage: "folder.badge.plus")
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.regular)
-
-            Divider()
-                .frame(height: 20)
-
             Toggle("Fit Small", isOn: $viewModel.fitSmallImages)
                 .toggleStyle(.checkbox)
 
