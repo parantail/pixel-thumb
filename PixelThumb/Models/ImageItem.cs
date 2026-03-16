@@ -57,7 +57,7 @@ public class ImageItem : INotifyPropertyChanged
             bi.BeginInit();
             bi.UriSource = new Uri(FilePath, UriKind.Absolute);
             bi.CacheOption = BitmapCacheOption.OnLoad;
-            bi.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+            bi.CreateOptions = BitmapCreateOptions.IgnoreColorProfile | BitmapCreateOptions.IgnoreImageCache;
             bi.EndInit();
             bi.Freeze();
 
