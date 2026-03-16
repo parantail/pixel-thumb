@@ -13,6 +13,7 @@ public class ImageItem : INotifyPropertyChanged
     public string FilePath { get; }
     public string FileName { get; }
     public long FileSize { get; }
+    public string RelativeDirectory { get; set; } = "";
     public int PixelWidth { get; private set; }
     public int PixelHeight { get; private set; }
 

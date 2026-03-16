@@ -48,6 +48,20 @@
         <Border Grid.Row="1" Background="#2D2D2D" Padding="8,4">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Group Level -->
+                    <TextBlock Text="Group:" Foreground="#CCC" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="11"/>
+                    <ComboBox SelectedIndex="{Binding GroupLevel}"
+                              VerticalAlignment="Center"
+                              Margin="0,0,12,0"
+                              FontSize="11"
+                              Width="70"
+                              ToolTip="Group images by subdirectory level">
+                        <ComboBoxItem Content="None"/>
+                        <ComboBoxItem Content="Level 1"/>
+                        <ComboBoxItem Content="Level 2"/>
+                        <ComboBoxItem Content="Level 3"/>
+                    </ComboBox>
+
                     <!-- Filter Toggle + Popup -->
                     <ToggleButton x:Name="FilterToggle"
                                   IsChecked="{Binding IsFilterPopupOpen, Mode=TwoWay}"
@@ -205,8 +219,37 @@
                  VirtualizingPanel.IsVirtualizing="True"
                  VirtualizingPanel.VirtualizationMode="Recycling"
                  VirtualizingPanel.ScrollUnit="Pixel"
+                 VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                  SelectionMode="Single"
                  HorizontalContentAlignment="Left">
+            <ListBox.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="GroupItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="GroupItem">
+                                        <StackPanel>
+                                            <Border Background="#383838" Padding="8,4" Margin="0,4,0,2"
+                                                    BorderBrush="#505050" BorderThickness="0,0,0,1">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Name}" Foreground="#DDD" FontSize="12" FontWeight="SemiBold"/>
+                                                    <TextBlock Foreground="#888" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                        <Run Text="("/>
+                                                        <Run Text="{Binding ItemCount, Mode=OneWay}"/>
+                                                        <Run Text=")"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+                                            <ItemsPresenter/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </ListBox.GroupStyle>
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <vwp:VirtualizingWrapPanel Orientation="Horizontal"

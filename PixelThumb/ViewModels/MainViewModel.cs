@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -32,6 +33,9 @@ public class MainViewModel : INotifyPropertyChanged
     private int? _filterMaxHeight;
     private bool _isFilterPopupOpen;
     private CancellationTokenSource? _filterDebounceCts;
+
+    private int _groupLevel;
+    private string[] _rootFolders = [];
 
     public ObservableCollection<ImageItem> Images { get; } = new();
 
@@ -128,6 +132,18 @@ public class MainViewModel : INotifyPropertyChanged
         set { _isFilterPopupOpen = value; OnPropertyChanged(); }
     }
 
+    public int GroupLevel
+    {
+        get => _groupLevel;
+        set
+        {
+            if (_groupLevel == value) return;
+            _groupLevel = value;
+            OnPropertyChanged();
+            ApplyGrouping();
+        }
+    }
+
     public ICommand SelectFolderCommand { get; }
     public ICommand ShowInfoCommand { get; }
     public ICommand OpenInExplorerCommand { get; }
@@ -189,6 +205,19 @@ public class MainViewModel : INotifyPropertyChanged
         FilterMaxHeight = null;
     }
 
+    private void ApplyGrouping()
+    {
+        var view = CollectionViewSource.GetDefaultView(Images);
+        view.GroupDescriptions.Clear();
+
+        if (_groupLevel > 0)
+        {
+            view.GroupDescriptions.Add(new SubdirectoryGroupDescription(_groupLevel));
+        }
+
+        view.Refresh();
+    }
+
     private void UpdateFilteredStatusText()
     {
         if (!IsFilterActive || Images.Count == 0) return;
@@ -219,23 +248,38 @@ public class MainViewModel : INotifyPropertyChanged
         _loadCts = new CancellationTokenSource();
         var token = _loadCts.Token;
 
+        _rootFolders = folderPaths;
         IsLoading = true;
         Images.Clear();
         StatusText = "Searching for images...";
 
-        var files = await Task.Run(() =>
+        var filesWithRoot = await Task.Run(() =>
         {
             return folderPaths
-                .SelectMany(folder => Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories))
-                .Where(f => ImageExtensions.Contains(Path.GetExtension(f)))
+                .SelectMany(folder => Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
+                    .Select(f => (File: f, Root: folder)))
+                .Where(x => ImageExtensions.Contains(Path.GetExtension(x.File)))
                 .ToList();
         }, token);
 
         if (token.IsCancellationRequested) return;
 
-        StatusText = $"Loading {files.Count} images...";
+        StatusText = $"Loading {filesWithRoot.Count} images...";
 
-        var items = files.Select(f => new ImageItem(f)).ToList();
+        var multiRoot = folderPaths.Length > 1;
+        var items = filesWithRoot.Select(x =>
+        {
+            var item = new ImageItem(x.File);
+            var dir = Path.GetDirectoryName(x.File)!;
+            var rel = Path.GetRelativePath(x.Root, dir);
+            if (rel == ".") rel = "";
+            if (multiRoot && !string.IsNullOrEmpty(rel))
+                rel = Path.Combine(Path.GetFileName(x.Root), rel);
+            else if (multiRoot)
+                rel = Path.GetFileName(x.Root);
+            item.RelativeDirectory = rel;
+            return item;
+        }).ToList();
         foreach (var item in items)
         {
             if (token.IsCancellationRequested) return;
@@ -270,6 +314,8 @@ public class MainViewModel : INotifyPropertyChanged
                 : $"{folderPaths.Length} folders";
             StatusText = $"{Images.Count} images ({folderDisplay})";
             IsLoading = false;
+
+            ApplyGrouping();
 
             if (IsFilterActive)
             {
@@ -336,4 +382,24 @@ public class RelayCommand<T> : ICommand
 
     public bool CanExecute(object? parameter) => true;
     public void Execute(object? parameter) => _execute((T?)parameter);
+}
+
+public class SubdirectoryGroupDescription : GroupDescription
+{
+    private readonly int _level;
+
+    public SubdirectoryGroupDescription(int level) => _level = level;
+
+    public override object GroupNameFromItem(object? item, int level, CultureInfo culture)
+    {
+        if (item is not ImageItem imageItem) return "";
+
+        var relDir = imageItem.RelativeDirectory;
+        if (string.IsNullOrEmpty(relDir)) return "(root)";
+
+        var parts = relDir.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var take = Math.Min(_level, parts.Length);
+        var groupPath = string.Join(Path.DirectorySeparatorChar, parts.Take(take));
+        return string.IsNullOrEmpty(groupPath) ? "(root)" : groupPath;
+    }
 }
