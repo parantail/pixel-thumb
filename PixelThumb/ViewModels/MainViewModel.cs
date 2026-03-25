@@ -6,6 +6,8 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
+using System.Collections;
+using System.Collections.Specialized;
 using System.Windows.Input;
 using PixelThumb.Models;
 
@@ -147,14 +149,18 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand SelectFolderCommand { get; }
     public ICommand ShowInfoCommand { get; }
     public ICommand OpenInExplorerCommand { get; }
+    public ICommand CopyFilePathCommand { get; }
     public ICommand ClearFiltersCommand { get; }
+    public ICommand CopySelectedFilesCommand { get; }
 
     public MainViewModel()
     {
         SelectFolderCommand = new RelayCommand(SelectFolder);
         ShowInfoCommand = new RelayCommand<ImageItem>(ShowInfo);
         OpenInExplorerCommand = new RelayCommand<ImageItem>(OpenInExplorer);
+        CopyFilePathCommand = new RelayCommand<ImageItem>(CopyFilePath);
         ClearFiltersCommand = new RelayCommand(ClearFilters);
+        CopySelectedFilesCommand = new RelayCommand<IList>(CopySelectedFiles);
 
         var view = CollectionViewSource.GetDefaultView(Images);
         view.Filter = FilterPredicate;
@@ -342,6 +348,28 @@ public class MainViewModel : INotifyPropertyChanged
         if (item == null || !File.Exists(item.FilePath)) return;
 
         Process.Start("explorer.exe", $"/select,\"{item.FilePath}\"");
+    }
+
+    private void CopyFilePath(ImageItem? item)
+    {
+        if (item == null) return;
+
+        Clipboard.SetText(item.FilePath);
+    }
+
+    private void CopySelectedFiles(IList? selectedItems)
+    {
+        if (selectedItems == null || selectedItems.Count == 0) return;
+
+        var files = new StringCollection();
+        foreach (var obj in selectedItems)
+        {
+            if (obj is ImageItem item && File.Exists(item.FilePath))
+                files.Add(item.FilePath);
+        }
+
+        if (files.Count > 0)
+            Clipboard.SetFileDropList(files);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

@@ -15,6 +15,8 @@ final class ImageBrowserViewModel {
     var filterMinHeight: Int? { didSet { scheduleFilterUpdate() } }
     var filterMaxHeight: Int? { didSet { scheduleFilterUpdate() } }
 
+    var selectedItems: Set<ImageItem.ID> = []
+
     private(set) var filteredImages: [ImageItem] = []
     private(set) var isLoading: Bool = false
     private(set) var statusMessage: String = "No folder selected"
@@ -163,5 +165,19 @@ final class ImageBrowserViewModel {
 
     func openWithDefaultApp(_ item: ImageItem) {
         NSWorkspace.shared.open(item.url)
+    }
+
+    func copyFilePath(_ item: ImageItem) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(item.url.path, forType: .string)
+    }
+
+    func copySelectedFiles() {
+        let urls = images.filter { selectedItems.contains($0.id) }.map { $0.url }
+        guard !urls.isEmpty else { return }
+
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.writeObjects(urls as [NSURL])
     }
 }

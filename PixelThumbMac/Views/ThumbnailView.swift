@@ -6,8 +6,11 @@ struct ThumbnailView: View {
     let fitSmall: Bool
     let fitLarge: Bool
     let pixelScale: CGFloat
+    var isSelected: Bool = false
+    var onTap: ((NSEvent?) -> Void)? = nil
     let onRevealInFinder: () -> Void
     let onOpenWithDefaultApp: () -> Void
+    let onCopyFilePath: () -> Void
 
     var body: some View {
         VStack(spacing: 4) {
@@ -41,7 +44,17 @@ struct ThumbnailView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(4)
-        .background(Color.clear)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(isSelected ? Color.accentColor.opacity(0.3) : Color.clear)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+        )
+        .onTapGesture {
+            onTap?(NSApp.currentEvent)
+        }
         .contextMenu {
             Text(item.fileName)
                 .font(.headline)
@@ -62,6 +75,11 @@ struct ThumbnailView: View {
                 onOpenWithDefaultApp()
             }
             .keyboardShortcut(.return, modifiers: .command)
+
+            Button("Copy File Path") {
+                onCopyFilePath()
+            }
+            .keyboardShortcut("c", modifiers: [.command, .shift])
         }
         .task {
             await item.loadThumbnail()

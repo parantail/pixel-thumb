@@ -16,6 +16,7 @@
 
     <Window.InputBindings>
         <KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding SelectFolderCommand}"/>
+        <KeyBinding Key="C" Modifiers="Ctrl" Command="{Binding CopySelectedFilesCommand}" CommandParameter="{Binding SelectedItems, ElementName=ImageListBox}"/>
     </Window.InputBindings>
 
     <Window.Resources>
@@ -220,7 +221,7 @@
                  VirtualizingPanel.VirtualizationMode="Recycling"
                  VirtualizingPanel.ScrollUnit="Pixel"
                  VirtualizingPanel.IsVirtualizingWhenGrouping="True"
-                 SelectionMode="Single"
+                 SelectionMode="Extended"
                  HorizontalContentAlignment="Left">
             <ListBox.GroupStyle>
                 <GroupStyle>
@@ -304,6 +305,9 @@
                                 <Separator/>
                                 <MenuItem Header="Show in Explorer"
                                           Command="{Binding Data.OpenInExplorerCommand, Source={StaticResource Proxy}}"
+                                          CommandParameter="{Binding}"/>
+                                <MenuItem Header="Copy File Path"
+                                          Command="{Binding Data.CopyFilePathCommand, Source={StaticResource Proxy}}"
                                           CommandParameter="{Binding}"/>
                             </ContextMenu>
                         </StackPanel.ContextMenu>
